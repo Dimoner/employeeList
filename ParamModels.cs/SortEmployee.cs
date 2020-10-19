@@ -1,6 +1,6 @@
 namespace TestDimaBack.ParamModels
 {
-  public enum SortEmployee // Asc - возр Desc - убывание
+  public enum SortEmployee 
   {
     FirstNameAsc,
     FirstNameDesc,
