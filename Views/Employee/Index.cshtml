@@ -1,0 +1,263 @@
+﻿@using TestDimaBack.ParamModels;
+@model TestDimaBack.ViewModels.ViewEmployees;
+
+@{
+    ViewData["Title"] = "Сотрудники";
+}
+
+@Html.CreateBreadCrumbs(BreadcrumbsHelper.ActiveBreadcrumbs.Employee)
+
+<div class="employees">
+    <div class="employees_header">
+        <span class="title">Список сотрудников</span>
+    </div>
+    <div class="employees_content">
+        <div class="mb-20 employees_content__header">
+            <form class="sortBlock">
+                <div class="labelSelect">
+                    <span class="labelSelect_label">Отделы</span>
+                    <select name="departmentSort">
+                        <option value="0">Все</option>
+                        @foreach (Department comp in Model.Departments)
+                        {
+                            @Html.CreateList(comp.Id, comp.DepartmentName, Model.DepartmentSort);
+                        }
+                        </select>
+                    </div>
+
+                    <div class="labelSelect">
+                        <span class="labelSelect_label">Языки</span>
+                        <select name="codeLanguageSort">
+                            <option value="0">Все</option>
+                            @foreach (CodeLanguage lang in Model.CodeLanguages)
+                        {
+                            @Html.CreateList(lang.Id, lang.Language, Model.CodeLanguageSort);
+                        }
+                        </select>
+                    </div>
+                    <input type="hidden" name="sortEmployee" value="@ViewBag.CurrentSortName">
+                    <input type="submit" value="Сортировать">
+                </form>
+
+                <span class="subTitle link" id="openButton">Добавить</span>
+            </div>
+            <table class="tableList">
+                <thead>
+                    <tr class="tableList_header" id="tableList_header">
+                        <th class="tableTitleElem">
+                            <a id="sortFirstName" data-sort="@ViewBag.FirstNameSort">
+                                Имя
+                            </a>
+                        </th>
+                        <th class="tableTitleElem">
+                            <a id="sortSecondName" data-sort="@ViewBag.SecondNameSort">
+                                Фамилия
+                            </a>
+                        </th>
+                        <th class="tableTitleElem" >
+                            <a id="sortAge" data-sort="@ViewBag.AgeSort">
+                                Возраст
+                            </a>
+                        </th>
+                        <th class="tableTitleElem" >
+                            <a id="sortDep" data-sort="@ViewBag.DepartmentSort">
+                                Отдел
+                            </a>
+                        </th>
+                        <th class="tableTitleElem">
+                            Язык
+                        </th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+
+                @foreach (var employee in Model.Employees)
+            {
+                <tr class="tableList_line">
+                    <td>@employee.FirstName</td>
+                    <td>@employee.SecondName</td>
+                    <td>@employee.Age</td>
+                    <td>@employee.Department.DepartmentName</td>
+                    <td>
+                        @foreach (var lang in employee.EmployeeLanguages)
+                        {
+                            @(lang.CodeLanguage.Language + " ")
+                            ;
+                        }
+                    </td>
+                    <td>
+                        <span data-id="@employee.Id" data-name="@employee.FirstName" data-secondName="@employee.SecondName"
+                        data-age="@employee.Age" data-depId="@employee.Department.Id"
+                        data-langIds="@Html.CreateLangIdList(employee.EmployeeLanguages)" class="link editEmployee">
+                            Изменить
+                        </span>
+                    </td>
+                    <td><span data-deleteId="@employee.Id" class="link deleteLink" id="openDeleteButton">Удалить</span>
+                    </td>
+                </tr>
+            }
+
+        </table>
+    </div>
+</div>
+
+
+<div class="modal" id="modal">
+    <div class="modal_content" id="modal_content">
+        <div class="modal_title">
+            <span class="title" id="employeeModalTitle">Добавление сотрудника</span>
+        </div>
+        <form class="modal_body" id="modal_body" action="/create" method="POST">
+            <div class="modal_body_form">
+                <input type="hidden" name="id" />
+                <div class="form_elem">
+                    <input placeholder="Введите имя" name="name" type="text" required>
+                    <span>Имя*</span>
+                </div>
+                <div class="form_elem">
+                    <input placeholder="Введите фамилию" name="secondName" type="text" required>
+                    <span>Фамилия*</span>
+                </div>
+                <div class="form_elem">
+                    <input placeholder="Введите возраст" name="age" type="number" required>
+                    <span>Возраст*</span>
+                </div>
+                <div class="form_elem">
+                    <select class="multiSelect" name="languageIds" multiple required>
+                        @foreach (CodeLanguage lang in Model.CodeLanguages)
+                        {
+                            @Html.CreateList(lang.Id, lang.Language, 0);
+                        }
+                        </select>
+                        <span>Язык*</span>
+                    </div class="form_elem">
+                    <div>
+                        <select name="departmentId" required>
+                            @foreach (Department comp in Model.Departments)
+                        {
+                            @Html.CreateList(comp.Id, comp.DepartmentName, 0);
+                        }
+                        </select>
+                        <span>Отдел*</span>
+                    </div>
+                </div>
+                <div class="modal_body__buttonGroup">
+                    <input type="submit" id="saveEmployee">
+                    <button id="cancelSaveEmployee">Отменить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="modalDelete">
+        <div class="modal_content delete" id="modalDelete_content">
+            <div class="modal_title">
+                <span class="title">Вы уверены, что хотите удалить?</span>
+            </div>
+            <div class="modal_body delete">
+                <div class="modal_body__buttonGroup">
+                    <button id="deleteEmployee">Удалить</button>
+                    <button id="cancelDeleteEmployee">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const sortFirstName = document.getElementById("sortFirstName");
+sortFirstName.onclick = () => handlerLocation(sortFirstName.dataset["sort"])
+
+const sortSecondName = document.getElementById("sortSecondName");
+sortSecondName.onclick = () => handlerLocation(sortSecondName.dataset["sort"])
+
+const sortAge = document.getElementById("sortAge");
+sortAge.onclick = () => handlerLocation(sortAge.dataset["sort"])
+
+const sortDep = document.getElementById("sortDep");
+sortDep.onclick = () => handlerLocation(sortDep.dataset["sort"])
+
+const handlerLocation = (sortData) => {
+    location.href=`${document.location.origin}/?${searchUrl("sortEmployee", sortData)}`;
+}
+
+
+const openButton = document.getElementById("openButton");
+const modal = document.getElementById("modal");
+const modalContent = document.getElementById("modal_content");
+const saveEmployee = document.getElementById("saveEmployee");
+const cancelSaveEmployee = document.getElementById("cancelSaveEmployee");
+const modal_body = document.getElementById("modal_body");
+const employeeModalTitle = document.getElementById("employeeModalTitle")
+
+modal.addEventListener('click',function (e) {
+  if (modal.classList.contains("open") && !modalContent.contains(e.target)) {
+    modal_body.reset();
+    modal.classList.toggle("open")
+  }
+});
+
+cancelSaveEmployee.onclick = (e) => {
+  e.preventDefault();
+  modal_body.reset();
+  modal.classList.toggle("open")
+}
+
+openButton.addEventListener('click',function (e) {
+  modal.classList.toggle("open")
+  employeeModalTitle.textContent = "Добавление сотрудника"
+});
+
+const modalDelete = document.getElementById("modalDelete");
+const modalDelete_content = document.getElementById("modalDelete_content");
+const deleteEmployee = document.getElementById("deleteEmployee");
+const cancelDeleteEmployee = document.getElementById("cancelDeleteEmployee");
+
+cancelDeleteEmployee.onclick = () => {
+  modalDelete.classList.toggle("open")
+}
+
+modalDelete.addEventListener('click',function (e) {
+  if (modalDelete.classList.contains("open") && !modalDelete_content.contains(e.target)) {
+    modalDelete.classList.toggle("open")
+  }
+});
+
+const deleteLinks = document.getElementsByClassName("deleteLink");
+
+for (let i = 0; i < deleteLinks.length; i++) {
+
+  deleteLinks[i].onclick = () => {
+    modalDelete.classList.toggle("open")
+
+    deleteEmployee.onclick = () => serviceController("DELETE",`delete/${deleteLinks[i].dataset["deleteid"]}`,modalDelete)
+  }
+}
+
+const editLinks = document.getElementsByClassName("editEmployee");
+
+for (let i = 0; i < editLinks.length; i++) {
+  editLinks[i].onclick = () => {
+    modal.classList.toggle("open")
+    employeeModalTitle.textContent = "Редактирование сотрудника"
+    modal_body.method = "POST";
+    modal_body.action = "/edit"
+    modal_body.elements[0].value = editLinks[i].dataset["id"]
+    modal_body.elements[1].value = editLinks[i].dataset["name"]
+    modal_body.elements[2].value = editLinks[i].dataset["secondname"]
+    modal_body.elements[3].value = editLinks[i].dataset["age"]
+    modal_body.elements[5].selectedIndex = editLinks[i].dataset["depid"] - 1
+
+    const selectedLang = editLinks[i].dataset["langids"].split(',')
+
+    for (let i = 0; i < modal_body.elements[4].options.length; i++) {
+      const optionItem = modal_body.elements[4].options[i]
+
+      if (selectedLang.includes(optionItem.value)) {
+        console.log(optionItem.value)
+        optionItem.selected = true;
+      }
+    }
+  }
+}
+</script>

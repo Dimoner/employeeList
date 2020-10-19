@@ -1,0 +1,77 @@
+
+@mixin breadCrumbs {
+  list-style: none;
+  margin: 0 0 4px 0;
+  padding: 0 0 0 1px;
+  z-index: 5;
+
+  &_text {
+    color: $color-white;
+    padding: 14px 24px 10px;
+    margin: 0px -6px 0 10px;
+    position: relative;
+    float: left;
+    text-align: center;
+    z-index: 1;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  &_text:hover {
+    color: $color-black;
+  }
+
+  &_text:before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0; left: 0;
+    width: 70%;
+    height: 100%;
+    border-style: solid;
+    border-color: $content_color;
+    border-width: 2px 0 2px 2px;
+    border-radius: 8px 0 0 0;
+    -webkit-transform: skewX(-20deg);
+    -moz-transform: skewX(-20deg);
+    -o-transform: skewX(-20deg);
+    transform: skewX(-20deg);
+    background-color: inherit;
+    z-index: -1;
+  }
+
+  &_text:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0; right: 0;
+    width: 70%;
+    height: 100%;
+    border-style: solid;
+    border-color: $content_color;
+    border-width: 2px 2px 2px 0;
+    border-radius: 0 8px 0 0;
+    -webkit-transform: skewX(20deg);
+    -moz-transform: skewX(20deg);
+    -o-transform: skewX(20deg);
+    transform: skewX(20deg);
+    background-color: inherit;
+    z-index: -1;
+  }
+
+  &_text.active {
+    color: $color-black;
+    z-index: 10;
+  }
+
+  &_text.active::before,
+  &_text.active::after{
+    background-color: $content_color;
+    border-bottom-color: $content_color;
+  }
+
+  &_text:not([class='AuthBlock__modalAuth_header_text active']):hover::before,
+  &_text:not([class='AuthBlock__modalAuth_header_text active']):hover::after {
+    background-color: $content_color;
+  }
+}

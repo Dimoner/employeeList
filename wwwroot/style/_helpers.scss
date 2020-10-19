@@ -1,0 +1,53 @@
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mr-20 {
+  margin-right: 20px;
+}
+
+.mt-15 {
+  margin-top: 15px;
+}
+
+.link {
+  &:hover {
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.deleteLink {
+  color:$delete_color;
+}
+
+.jc-fe {
+  justify-content: flex-end !important;
+}
+
+.jc-sa {
+  justify-content: space-around !important;
+}
+
+.height-230 {
+  height: 230px !important;
+}
+
+.deleteDep {
+  flex-direction: column;
+  padding: 20px 17px;
+}
+
+.height-200 {
+  height: 200px !important;
+}
+
+.langNewField {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-right: 30px;
+  span {
+    margin-bottom: 5px;
+  }
+}

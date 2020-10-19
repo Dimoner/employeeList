@@ -1,0 +1,159 @@
+@model IEnumerable<TestDimaBack.Models.Department>;
+
+@{
+  ViewData["Title"] = "Отделы";
+}
+
+@Html.CreateBreadCrumbs(BreadcrumbsHelper.ActiveBreadcrumbs.Department)
+
+<div class="employees">
+  <div class="employees_header">
+    <span class="title">Список отделов</span>
+  </div>
+  <div class="employees_content">
+    <div class="mb-20 employees_content__header jc-fe">
+      <span class="subTitle link" id="openButtonDepAdd">Добавить</span>
+    </div>
+    <table class="tableList">
+      <thead>
+        <tr class="tableList_header" id="tableList_header">
+          <th class="tableTitleElem">Название</th>
+          <th class="tableTitleElem">Этаж</th>
+          <th class="tableTitleElem">Кол-во сотрудников</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+
+      @foreach (Department Department in Model)
+      {
+        <tr class="tableList_line">
+          <td>@Department.DepartmentName</td>
+          <td>@Department.Floor</td>
+          <td>@Department.Employees.Count()</td>
+          <td>
+            <span 
+              data-id="@Department.Id" 
+              data-DepartmentName="@Department.DepartmentName" 
+              data-Floor="@Department.Floor"
+              class="link editDepartment"
+            >
+              Изменить
+            </span>
+          </td>
+          <td>
+            <span data-id="@Department.Id" class="link deleteLink">
+              Удалить
+            </span>
+          </td>
+        </tr>
+      }
+    </table>
+  </div>
+</div>
+
+<div class="modal" id="modalAddDep">
+  <div class="modal_content height-230" id="modalAddDep_content">
+    <div class="modal_title">
+      <span class="title" id="modalAddDep_title">Добавление отдела</span>
+    </div>
+    <div class="modal_body">
+      <form action="/departments/create" method="POST" id="modal_body_add_dep" class="modal_body_add_dep">
+        <input type="hidden" name="id">
+        <label for="DepartmentName">Название отдела*</label>
+        <input name="DepartmentName" type="text" required id="DepartmentName">
+
+        <label for="Floor">Этаж*</label>
+        <input name="Floor" type="number" required id="Floor" class="mb-20">
+        <div class="modal_body__buttonGroup">
+          <button id="addDep" type="submit">Сохранить</button>
+          <button id="canselAddDep">Отменить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalDelete">
+        <div class="modal_content delete" id="modalDelete_content">
+            <div class="modal_title deleteDep">
+                <span class="title">Вы уверены, что хотите удалить отдел?</span><br>
+                <span class="subtitle">Удаление отдела повлечен удаление всех его сотрудников!</span>
+            </div>
+            <div class="modal_body delete">
+                <div class="modal_body__buttonGroup">
+                    <button id="deleteDep">Удалить</button>
+                    <button id="cancelDeleteDep">Отменить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const openButtonDepAdd = document.getElementById("openButtonDepAdd");
+const modalAddDep = document.getElementById("modalAddDep");
+const modalAddDep_content = document.getElementById("modalAddDep_content");
+const canselAddDep = document.getElementById("canselAddDep");
+const modal_body_add_dep = document.getElementById("modal_body_add_dep");
+const modalAddDep_title = document.getElementById("modalAddDep_title")
+
+modalAddDep.addEventListener('click',function (e) {
+  if (modalAddDep.classList.contains("open") && !modalAddDep_content.contains(e.target)) {
+     modal_body_add_dep.reset();
+    modalAddDep.classList.toggle("open")
+  }
+});
+
+canselAddDep.onclick = (e) => {
+  e.preventDefault();
+  modal_body_add_dep.reset();
+  modalAddDep.classList.toggle("open")
+}
+
+openButtonDepAdd.addEventListener('click',function (e) {
+  modalAddDep.classList.toggle("open")
+  modalAddDep_title.textContent = "Добавление отдела"
+});
+
+
+const editLinks = document.getElementsByClassName("editDepartment");
+
+for (let i = 0; i < editLinks.length; i++) {
+  editLinks[i].onclick = () => {
+    modalAddDep.classList.toggle("open")
+    modalAddDep_title.textContent = "Редактирование отдела"
+
+    console.log(editLinks[i].dataset["id"],editLinks[i].dataset["departmentname"],editLinks[i].dataset["floor"])
+    modal_body_add_dep.method = "POST";
+    modal_body_add_dep.action = "/departments/edit"
+    modal_body_add_dep.elements[0].value = editLinks[i].dataset["id"]
+    modal_body_add_dep.elements[1].value = editLinks[i].dataset["departmentname"]
+    modal_body_add_dep.elements[2].value = editLinks[i].dataset["floor"]
+  }
+}
+
+const modalDelete = document.getElementById("modalDelete");
+const modalDelete_content = document.getElementById("modalDelete_content");
+const deleteDep = document.getElementById("deleteDep");
+const cancelDeleteDep = document.getElementById("cancelDeleteDep");
+
+cancelDeleteDep.onclick = () => {
+  modalDelete.classList.toggle("open")
+}
+
+modalDelete.addEventListener('click',function (e) {
+  if (modalDelete.classList.contains("open") && !modalDelete_content.contains(e.target)) {
+    modalDelete.classList.toggle("open")
+  }
+});
+
+const deleteLinks = document.getElementsByClassName("deleteLink");
+
+for (let i = 0; i < deleteLinks.length; i++) {
+  deleteLinks[i].onclick = () => {
+    modalDelete.classList.toggle("open")
+
+    deleteDep.onclick = () => serviceController("DELETE", `/departments/delete/${deleteLinks[i].dataset["id"]}`, modalDelete)
+  }
+}
+</script>

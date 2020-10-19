@@ -1,0 +1,146 @@
+@model IEnumerable<TestDimaBack.Models.CodeLanguage>;
+
+@{
+  ViewData["Title"] = "Языки";
+}
+
+@Html.CreateBreadCrumbs(BreadcrumbsHelper.ActiveBreadcrumbs.Languages)
+
+<div class="employees">
+  <div class="employees_header">
+    <span class="title">Список языков</span>
+  </div>
+  <div class="employees_content">
+    <div class="mb-20 employees_content__header jc-fe">
+      <span class="subTitle link" id="openButton">Добавить</span>
+    </div>
+    <table class="tableList">
+      <thead>
+        <tr class="tableList_header jc-sa" id="tableList_header">
+          <th class="tableTitleElem">Название</th>
+          <th class="tableTitleElem">Кол-во сотрудников</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      @foreach (CodeLanguage CodeLanguage in Model)
+      {
+        <tr class="tableList_line jc-sa">
+          <td>@CodeLanguage.Language</td>
+          <td>@CodeLanguage.EmployeeLanguages.Count()</td>
+          <td>
+            <span data-id="@CodeLanguage.Id" data-langName="@CodeLanguage.Language" class="link editDepartment">
+              Изменить
+            </span>
+          </td>
+          <td>
+            <span data-id="@CodeLanguage.Id" class="link deleteLink">
+              Удалить
+            </span>
+          </td>
+        </tr>
+      }
+    </table>
+  </div>
+  <div class="modal" id="modal">
+    <div class="modal_content height-200" id="modal_content">
+      <div class="modal_title">
+        <span class="title" id="langModalTitle">Добавление языка</span>
+      </div>
+      <form class="modal_body" id="modal_body" action="/languages/create" method="POST">
+        <div class="modal_body_form">
+          <input type="hidden" name="id" />
+          <div class="langNewField">
+            <span>Имя нового языка в нашем арсенале*</span>
+            <input placeholder="Введите имя" name="language" type="text" required>
+          </div>
+          <div class="modal_body__buttonGroup">
+            <input type="submit" id="saveLang">
+            <button id="cancelSaveLang">Отменить</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalDelete">
+  <div class="modal_content delete" id="modalDelete_content">
+    <div class="modal_title deleteDep">
+      <span class="title">Вы уверены, что хотите удалить?</span>
+      <span class="subtitle mt-15">Если кто-то говорит на этом языке, то его нельзя удалить!!!</span>
+    </div>
+    <div class="modal_body delete">
+      <div class="modal_body__buttonGroup">
+        <button id="deleteLang">Удалить</button>
+        <button id="cancelDeleteLang">Отменить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const openButton = document.getElementById("openButton");
+const modal = document.getElementById("modal");
+const modalContent = document.getElementById("modal_content");
+const cancelSaveLang = document.getElementById("cancelSaveLang");
+const modal_body = document.getElementById("modal_body");
+const langModalTitle = document.getElementById("langModalTitle")
+
+modal.addEventListener('click',function (e) {
+  if (modal.classList.contains("open") && !modalContent.contains(e.target)) {
+    modal_body.reset();
+    modal.classList.toggle("open")
+  }
+});
+
+cancelSaveLang.onclick = (e) => {
+  e.preventDefault();
+  modal_body.reset();
+  modal.classList.toggle("open")
+}
+
+openButton.addEventListener('click',function (e) {
+  modal.classList.toggle("open")
+  langModalTitle.textContent = "Добавление языка"
+});
+
+const editLinks = document.getElementsByClassName("editDepartment");
+
+for (let i = 0; i < editLinks.length; i++) {
+  editLinks[i].onclick = () => {
+    modal.classList.toggle("open")
+    langModalTitle.textContent = "Редактирование языка"
+    modal_body.method = "POST";
+    modal_body.action = "/languages/edit"
+    modal_body.elements[0].value = editLinks[i].dataset["id"]
+    modal_body.elements[1].value = editLinks[i].dataset["langname"]
+  }
+}
+
+const modalDelete = document.getElementById("modalDelete");
+const modalDelete_content = document.getElementById("modalDelete_content");
+const deleteLang = document.getElementById("deleteLang");
+const cancelDeleteLang = document.getElementById("cancelDeleteLang");
+
+cancelDeleteLang.onclick = () => {
+  modalDelete.classList.toggle("open")
+}
+
+modalDelete.addEventListener('click',function (e) {
+  if (modalDelete.classList.contains("open") && !modalDelete_content.contains(e.target)) {
+    modalDelete.classList.toggle("open")
+  }
+});
+
+const deleteLinks = document.getElementsByClassName("deleteLink");
+
+for (let i = 0; i < deleteLinks.length; i++) {
+
+  deleteLinks[i].onclick = () => {
+    modalDelete.classList.toggle("open")
+
+    deleteLang.onclick = () => serviceController("DELETE", `/languages/delete/${deleteLinks[i].dataset["id"]}`, modalDelete);
+  }
+}
+</script>
