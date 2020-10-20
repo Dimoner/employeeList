@@ -246,7 +246,15 @@ for (let i = 0; i < editLinks.length; i++) {
     modal_body.elements[1].value = editLinks[i].dataset["name"]
     modal_body.elements[2].value = editLinks[i].dataset["secondname"]
     modal_body.elements[3].value = editLinks[i].dataset["age"]
-    modal_body.elements[5].selectedIndex = editLinks[i].dataset["depid"] - 1
+
+    for(let j = 0; j < modal_body.elements[5].options.length; j++)
+    {
+        const optionItem = modal_body.elements[5].options[j];
+        if(optionItem.value === editLinks[i].dataset["depid"])
+        {
+           optionItem.selected = true; 
+        }
+    }
 
     const selectedLang = editLinks[i].dataset["langids"].split(',')
 
@@ -254,7 +262,6 @@ for (let i = 0; i < editLinks.length; i++) {
       const optionItem = modal_body.elements[4].options[i]
 
       if (selectedLang.includes(optionItem.value)) {
-        console.log(optionItem.value)
         optionItem.selected = true;
       }
     }

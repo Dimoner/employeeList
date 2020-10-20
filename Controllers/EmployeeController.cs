@@ -141,46 +141,22 @@ namespace TestDimaBack.Controllers
         employee.Department = department;
         await db.SaveChangesAsync();
 
-        string oldIds = "";
+        IEnumerable<int> oldIdList = employee.EmployeeLanguages.Select(el => el.CodeLanguageId).ToList();
 
-        foreach (var langId in employee.EmployeeLanguages)
+        IEnumerable<int> deleteLandIds = oldIdList.Except(paramEditEmployee.LanguageIds);
+
+        IEnumerable<int> addLangIds = paramEditEmployee.LanguageIds.Except(oldIdList);
+
+        foreach (int langId in addLangIds)
         {
-          oldIds += $"{langId.CodeLanguageId},";
-        }
-
-        string[] oldList = oldIds.TrimEnd(',').Split(new char[] { ',' });
-
-        foreach (var langId in paramEditEmployee.LanguageIds)
-        {
-          if (!string.IsNullOrEmpty(Convert.ToString(langId)))
-          {
-            if (Array.IndexOf<string>(oldList, Convert.ToString(langId)) < 0)
-            {
-              employee.EmployeeLanguages.Add(new EmployeeLanguage { CodeLanguageId = langId, EmployeeId = employee.Id });
-            }
-          }
+          employee.EmployeeLanguages.Add(new EmployeeLanguage { CodeLanguageId = langId, EmployeeId = employee.Id });
         }
 
         await db.SaveChangesAsync();
 
-        string resultIds = "";
-
-        foreach (var langId in employee.EmployeeLanguages)
+        foreach (int langId in deleteLandIds)
         {
-          if (paramEditEmployee.LanguageIds.IndexOf(langId.CodeLanguageId) < 0)
-          {
-            resultIds += $"{langId.CodeLanguageId},";
-          }
-        }
-
-        string[] deleteIds = resultIds.Split(new char[] { ',' });
-
-        foreach (var langId in deleteIds)
-        {
-          if (!string.IsNullOrEmpty(langId))
-          {
-            employee.EmployeeLanguages.Remove(employee.EmployeeLanguages.FirstOrDefault(p => p.CodeLanguageId == Convert.ToInt32(langId)));
-          }
+          employee.EmployeeLanguages.Remove(employee.EmployeeLanguages.FirstOrDefault(p => p.CodeLanguageId == langId));
         }
 
         await db.SaveChangesAsync();
